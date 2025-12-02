@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 TEST_INPUT = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"
@@ -29,11 +31,11 @@ def test_invalid(n, invalid):
     assert is_invalid(n) is invalid
 
 
-def invalid_ids(range_text):
+def invalid_ids(range_text, invalid_check=is_invalid):
     for pair in range_text.split(","):
         a, b = pair.split("-")
         for n in range(int(a), int(b) + 1):
-            if is_invalid(n):
+            if invalid_check(n):
                 yield n
 
 
@@ -55,3 +57,30 @@ def part1(range_text):
 
 
 print(f"Part 1: {part1(REAL_INPUT)}")
+
+
+def is_invalid_part2(n):
+    return bool(re.fullmatch(r"(\d+)\1+", str(n)))
+
+
+@pytest.mark.parametrize(
+    "n, invalid",
+    [
+        (55, True),
+        (555, True),
+        (57, False),
+        (6464, True),
+        (123123, True),
+        (123123123, True),
+        (12312312, False),
+    ],
+)
+def test_invalid_part2(n, invalid):
+    assert is_invalid_part2(n) is invalid
+
+
+def part2(range_text):
+    return sum(invalid_ids(range_text, invalid_check=is_invalid_part2))
+
+
+print(f"Part 2: {part2(REAL_INPUT)}")
