@@ -42,3 +42,23 @@ def test_count_accessible():
     assert count_accessible(TEST_INPUT) == 13
 
 print(f"Part 1: {count_accessible(REAL_INPUT)} are accessible")
+
+def count_removed(lines):
+    positions = read_positions(lines)
+    removed = 0
+    while True:
+        to_remove = set()
+        for x, y in positions:
+            num_neighbors = sum((nxy in positions) for nxy in neighbors(x, y))
+            if num_neighbors < 4:
+                to_remove.add((x, y))
+        if not to_remove:
+            break
+        removed += len(to_remove)
+        positions -= to_remove
+    return removed
+
+def test_count_removed():
+    assert count_removed(TEST_INPUT) == 43
+
+print(f"Part 2: {count_removed(REAL_INPUT)} can be removed")
