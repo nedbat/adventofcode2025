@@ -30,8 +30,8 @@ def test_parse():
         ["*", "+", "*", "+"]
     )
 
-def part1(text):
-    numss, ops = parse(text)
+def add_them_up(text, parser):
+    numss, ops = parser(text)
     total = 0
     for nums, op in zip(numss, ops):
         if op == "+":
@@ -42,7 +42,31 @@ def part1(text):
         total += ans
     return total
 
+def part1(text):
+    return add_them_up(text, parse)
+
 def test_part1():
     assert part1(TEST_INPUT) == 4277556
 
 print(f"Part 1: {part1(REAL_INPUT)}")
+
+def parse2(text):
+    lines = text.splitlines()
+    turned = ["".join(ll) for ll in zip(*lines[:-1])]
+    nums = []
+    for word in [' '] + turned:
+        if not word.strip():
+            nums.append([])
+        else:
+            nums[-1].append(int(word))
+
+    ops = lines[-1].split()
+    return nums, ops
+
+def part2(text):
+    return add_them_up(text, parse2)
+
+def test_part2():
+    assert part2(TEST_INPUT) == 3263827
+
+print(f"Part 2: {part2(REAL_INPUT)}")
