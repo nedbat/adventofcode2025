@@ -68,60 +68,33 @@ def overlap(r1, r2):
     return r1[1] >= r2[0] and r2[1] >= r1[0]
 
 
-def split_ranges(r1, r2):
-    if overlap(r1, r2):
-        a = min(r1[0], r2[0])
-        b = max(r1[0], r2[0])
-        c = min(r1[1], r2[1])
-        d = max(r1[1], r2[1])
-        splits = set()
-        return {(a, b), (b, c), (c, d)}
-    else:
-        return {r1, r2}
+def union(r1, r2):
+    assert r1[0] <= r1[1]
+    assert r2[0] <= r2[1]
+    return (min(r1[0], r2[0]), max(r2[1], r2[1]))
 
 
-@pytest.mark.parametrize(
-    "r1, r2, res",
-    [
-        ((10, 20), (30, 40), {(10, 20), (30, 40)}),
-        ((10, 20), (15, 25), {(10, 15), (15, 20), (20, 25)}),
-        ((15, 25), (10, 20), {(10, 15), (15, 20), (20, 25)}),
-        ((10, 20), (10, 20), {(10, 10), (10, 20), (20, 20)}),
-        ((10, 10), (10, 20), {(10, 10), (10, 20)}),
-    ],
-)
-def test_split_ranges(r1, r2, res):
-    assert split_ranges(r1, r2) == res
-
-
-def union_ranges(rs):
-    print(f"starting with {rs}")
-    splits = {rs[0]}
-    for r in rs:
-        new_splits = set()
-        for s in splits:
-            new_splits.update(split_ranges(r, s))
-        print(f"intermediate: {new_splits=}")
-        splits = sorted((a, b) for a, b in new_splits if a != b)
-        print(f"intermediate: {splits=}")
-        if len(splits) > 1:
-            new_splits = set()
-            for r1, r2 in zip(splits, splits[1:]):
-                new_splits.update(split_ranges(r1, r2))
-            print(f"intermediate: {new_splits=}")
-            splits = sorted((a, b) for a, b in new_splits if a != b)
-        print(f"adding {r=}, {splits=}")
-    return splits
-
+def add_one_range(r1s, r2):
+    added = set()
+    for r1 in r1s:
+        if overlap(r1, r2):
+            r2 = union(r1, r2)
+        else:
+            added.add(r1)
+    added.add(r2)
+    return sorted(added)
 
 def part2(text):
     db = Db.parse(text)
-    ranges = [(a, b + 1) for a, b in db.fresh_ranges]
-    union = union_ranges(ranges)
-    print(f"done: {sorted(union)}")
-    total = sum(b - a for a, b in union)
+    ranges = [(a, b) for a, b in db.fresh_ranges]
+    combined = set()
+    for r in sorted(ranges):
+        combined = add_one_range(combined, r)
+    total = sum(b - a + 1 for a, b in combined)
     return total
 
 
 def test_part2():
     assert part2(TEST_INPUT) == 14
+
+print(f"Part 2: there are {part2(REAL_INPUT)} fresh ingredients")
