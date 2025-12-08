@@ -41,8 +41,6 @@ def circuits(text, n_connections):
     for _, a, b in ds:
         a_circuit = circuits[a]
         b_circuit = circuits[b]
-        # if a_circuit == b_circuit:
-        #     continue
         combined = a_circuit | b_circuit
         for cpt in combined:
             circuits[cpt] = combined
@@ -59,3 +57,24 @@ def test_circuits():
     assert circuits(TEST_INPUT, 10) == 40
 
 print("Part 1:", circuits(REAL_INPUT, 1000))
+
+
+def circuits2(text):
+    pts = parse(text)
+    # Map point to sets, circuits containing those points.
+    circuits = {pt: {pt} for pt in pts}
+    ds = sorted((dist(a, b), a, b) for a,b in itertools.combinations(pts, 2))
+    for _, a, b in ds:
+        a_circuit = circuits[a]
+        b_circuit = circuits[b]
+        combined = a_circuit | b_circuit
+        if len(combined) == len(pts):
+            break
+        for cpt in combined:
+            circuits[cpt] = combined
+    return a[0] * b[0]
+
+def test_circuits2():
+    assert circuits2(TEST_INPUT) == 25272
+
+print("Part 2:", circuits2(REAL_INPUT))
